@@ -160,7 +160,7 @@ public class GameView extends LinearLayout {
                         emptyList.add(cardsList.get(i*N+j));
                         n++;
                     }
-                    beforemove=""+size;
+                    beforemove+=""+size;
                     cardsList.get(i*N+j).setNum(0);
                 }
                 for (int x=0;x<N;x++){
@@ -186,7 +186,7 @@ public class GameView extends LinearLayout {
                     }
                 }
                 for (int x=0;x<N;x++){
-                    afterremove=""+cardsList.get(i*N+x).getNum();
+                    afterremove+=""+cardsList.get(i*N+x).getNum();
                 }
                 zero(num);
                 if (!afterremove.equals(beforemove)){
@@ -195,6 +195,7 @@ public class GameView extends LinearLayout {
             }
             if (move){
                 addNum();
+                Log();
             }
             finishcheck();
         }
@@ -212,7 +213,7 @@ public class GameView extends LinearLayout {
                         emptyList.add(cardsList.get(i*N+j));
                         n++;
                     }
-                    beforemove=""+size;
+                    beforemove+=""+size;
                     cardsList.get(i*N+j).setNum(0);
                 }
                 for (int x=N-1;x>=0;x--){
@@ -237,7 +238,7 @@ public class GameView extends LinearLayout {
                     }
                 }
                 for (int x=0;x<N;x++){
-                    afterremove=""+cardsList.get(i*N+x).getNum();
+                    afterremove+=""+cardsList.get(i*N+x).getNum();
                 }
                 zero(num);
                 if (!afterremove.equals(beforemove)){
@@ -246,6 +247,7 @@ public class GameView extends LinearLayout {
             }
             if (move){
                 addNum();
+                Log();
             }
             finishcheck();
         }
@@ -262,7 +264,7 @@ public class GameView extends LinearLayout {
                         emptyList.add(cardsList.get(i*N+j));
                         n++;
                     }
-                    beforemove=""+size;
+                    beforemove+=""+size;
                     cardsList.get(i*N+j).setNum(0);
                 }
                 for (int x=0;x<N;x++){
@@ -288,7 +290,7 @@ public class GameView extends LinearLayout {
                     }
                 }
                 for (int x=0;x<N;x++){
-                    afterremove=""+cardsList.get(x*N+j).getNum();
+                    afterremove+=""+cardsList.get(x*N+j).getNum();
                 }
                 zero(num);
                 if (!afterremove.equals(beforemove)){
@@ -297,6 +299,7 @@ public class GameView extends LinearLayout {
             }
             if (move){
                 addNum();
+                Log();
             }
             finishcheck();
         }
@@ -313,7 +316,7 @@ public class GameView extends LinearLayout {
                         emptyList.add(cardsList.get(i*N+j));
                         n++;
                     }
-                    beforemove=""+size;
+                    beforemove+=""+size;
                     cardsList.get(i*N+j).setNum(0);
                 }
                 for (int x=N-1;x>=0;x--){
@@ -338,7 +341,7 @@ public class GameView extends LinearLayout {
                     }
                 }
                 for (int x=0;x<N;x++){
-                    afterremove=""+cardsList.get(x*N+j).getNum();
+                    afterremove+=""+cardsList.get(x*N+j).getNum();
                 }
                 zero(num);
                 if (!afterremove.equals(beforemove)){
@@ -347,6 +350,7 @@ public class GameView extends LinearLayout {
             }
             if (move){
                 addNum();
+                Log();
             }
             finishcheck();
         }
@@ -370,6 +374,7 @@ public class GameView extends LinearLayout {
                 for (int j=0;j<4;j++){
                     Card card=new Card(getContext());
                     card.setNum(0);
+                    card.setCardId(i*4+j+1);
                     this.addView(card,mWidth,mWidth);
                     emptyList.add(card);
                     cardsList.add(card);
@@ -388,6 +393,9 @@ public class GameView extends LinearLayout {
             }
             emptyList.addAll(cardsList);
             Log.d(TAG,"进入");
+            addNum();addNum();
+            score=0;
+            scoreView.setText("0");
         }
 
         @Override
@@ -400,12 +408,23 @@ public class GameView extends LinearLayout {
         /**
          * 检查游戏是否结束
          */
+        private boolean y=false;
+        public void  digui(int i,int j,int num1){
+            if(y)return;
+            if(i==4||j==4)return;
+            int num2=cardsList.get(i*4+j).getNum();
+            if((i!=0&&j!=0)&&num2==num1){y=true;return;}
+            digui(i,j+1,num2);
+            digui(i+1,j,num2);
+            //i--;
+        }
         private void finishcheck(){
             if(emptyList.size()==0){
+                digui(0,0,cardsList.get(0).getNum());
                 AlertDialog.Builder dialog=new AlertDialog.Builder(getContext())
                         .setTitle("警告:")
                         .setMessage("你已经输了，去找你的男朋友吧！")
-                        .setCancelable(false)
+                        .setCancelable(true)
                         .setPositiveButton("重新开始不去找", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
@@ -418,7 +437,23 @@ public class GameView extends LinearLayout {
                                 MainActivity.activityList.get(0).finish();
                             }
                         });
+                if (!y){
+                    dialog.show();
+                }
+
             }
+            y=false;
+        }
+        private void Log(){
+           /* String num="";
+            if (emptyList.size()!=0){
+                for (Card card:emptyList){
+                    num+=card.getCardId()+" ";
+                }
+                Log.d(TAG,num);
+            }*/
+            Log.d(TAG,""+emptyList.size());
+
         }
         private void maxScore(){
             int maxScore=sharedPreferences.getInt("MaxScore",-1);

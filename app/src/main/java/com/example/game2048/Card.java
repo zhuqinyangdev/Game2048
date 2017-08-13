@@ -55,6 +55,15 @@ public class Card extends RelativeLayout {
         }
     }
 
+    public int getCardId() {
+        return cardId;
+    }
+
+    public void setCardId(int cardId) {
+        this.cardId = cardId;
+    }
+
+    private int cardId;
     private int num;
 
 
@@ -64,7 +73,7 @@ public class Card extends RelativeLayout {
     }
     private void initCard(){
         numView=new TextView(getContext());
-        numView.setTextSize(50);
+        numView.setTextSize(40);
         numView.setGravity(Gravity.CENTER);
         LayoutParams P=new LayoutParams(-1,-1);
         P.setMargins(10,10,0,0);
