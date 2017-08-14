@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -24,7 +25,7 @@ import java.util.List;
  * Created by ZQY on 2017/8/7.
  */
 
-public class GameView extends LinearLayout {
+public class GameView extends LinearLayout{
 
     private SharedPreferences.Editor editor= PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
     private SharedPreferences sharedPreferences=PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -32,7 +33,7 @@ public class GameView extends LinearLayout {
     private LinearLayout scorelayout=new LinearLayout(getContext());
     private TextView scoreView=new TextView(getContext());
     private TextView maxScoreView=new TextView(getContext());
-
+    private Button start_Game=new Button(getContext());
     private int score=0;
 
     public GameView(Context context, AttributeSet attrs) {
@@ -55,7 +56,6 @@ public class GameView extends LinearLayout {
         if(sharedPreferences.getInt("MaxScore",-1)==-1){
             editor.putInt("MaxScore",0);
             editor.apply();
-            editor.clear();
         }
         scorelayout.setOrientation(HORIZONTAL);
         setOrientation(VERTICAL);
@@ -64,14 +64,19 @@ public class GameView extends LinearLayout {
         scoreView.setText("得分:0");
         scoreView.setTextSize(18);
         maxScoreView.setTextSize(18);
-        maxScoreView.setText("最高分:"+sharedPreferences.getInt("MaxScore",0));
+        maxScoreView.setText("最高分:"+sharedPreferences.getInt("MaxScore",-1));
         scorelayout.setBackgroundColor(0xffeee4da);
-        scorelayout.addView(scoreView,400,ViewGroup.LayoutParams.WRAP_CONTENT);
-        scorelayout.addView(maxScoreView,ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        scorelayout.addView(scoreView,300,ViewGroup.LayoutParams.WRAP_CONTENT);
+        scorelayout.addView(maxScoreView,350,ViewGroup.LayoutParams.WRAP_CONTENT);
+
         addView(scorelayout,ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
 
         GameMain gameMain=new GameMain(getContext());
         addView(gameMain,ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        start_Game.setText("New Game");
+        start_Game.setAllCaps(false);
+        start_Game.setBackgroundColor(0xffeee4da);
+        scorelayout.addView(start_Game,ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 
     public class GameMain extends GridLayout{
@@ -98,6 +103,12 @@ public class GameView extends LinearLayout {
             initGameView();
         }
         private void initGameView(){
+            start_Game.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    startGame();
+                }
+            });
             setColumnCount(4);
             setBackgroundColor(0xffbbada0);
             cardsList=new ArrayList<Card>();
@@ -105,6 +116,9 @@ public class GameView extends LinearLayout {
             DisplayMetrics dm2 = getResources().getDisplayMetrics();
             mWidth=(dm2.widthPixels)/4;
             addCards();
+            if (sharedPreferences.getString("record",null)!=null){
+                read();
+            }
             this.setOnTouchListener(new OnTouchListener() {
                 private float xStart,yStart,xEnd,yEnd;
                 @Override
@@ -198,6 +212,7 @@ public class GameView extends LinearLayout {
                 Log();
             }
             finishcheck();
+            save();
         }
 
         private void moveRight(){
@@ -250,6 +265,7 @@ public class GameView extends LinearLayout {
                 Log();
             }
             finishcheck();
+            save();
         }
         private void moveUp(){
             int []num=new int[N];
@@ -302,6 +318,7 @@ public class GameView extends LinearLayout {
                 Log();
             }
             finishcheck();
+            save();
         }
         private void moveDown(){
             int []num=new int[N];
@@ -353,6 +370,7 @@ public class GameView extends LinearLayout {
                 Log();
             }
             finishcheck();
+            save();
         }
         private void addNum(){
             if (emptyList.size()!=0) {
@@ -370,6 +388,7 @@ public class GameView extends LinearLayout {
          * 添加卡片
          */
         private void addCards(){
+
             for(int i=0;i<4;i++){
                 for (int j=0;j<4;j++){
                     Card card=new Card(getContext());
@@ -392,7 +411,6 @@ public class GameView extends LinearLayout {
                 }
             }
             emptyList.addAll(cardsList);
-            Log.d(TAG,"进入");
             addNum();addNum();
             score=0;
             scoreView.setText("0");
@@ -413,7 +431,7 @@ public class GameView extends LinearLayout {
             if(y)return;
             if(i==4||j==4)return;
             int num2=cardsList.get(i*4+j).getNum();
-            if((i!=0&&j!=0)&&num2==num1){y=true;return;}
+            if((i!=0||j!=0)&&num2==num1){y=true;return;}
             digui(i,j+1,num2);
             digui(i+1,j,num2);
             //i--;
@@ -422,7 +440,7 @@ public class GameView extends LinearLayout {
             if(emptyList.size()==0){
                 digui(0,0,cardsList.get(0).getNum());
                 AlertDialog.Builder dialog=new AlertDialog.Builder(getContext())
-                        .setTitle("警告:")
+                        .setTitle("提示:")
                         .setMessage("你已经输了，去找你的男朋友吧！")
                         .setCancelable(true)
                         .setPositiveButton("重新开始不去找", new DialogInterface.OnClickListener() {
@@ -445,22 +463,34 @@ public class GameView extends LinearLayout {
             y=false;
         }
         private void Log(){
-           /* String num="";
-            if (emptyList.size()!=0){
-                for (Card card:emptyList){
-                    num+=card.getCardId()+" ";
-                }
-                Log.d(TAG,num);
-            }*/
             Log.d(TAG,""+emptyList.size());
-
+        }
+        private void read(){
+            String text=sharedPreferences.getString("record",null);
+            if (text!=null){
+                String []num=text.split(" ");
+                for (int i=0;i<N*N;i++){
+                    cardsList.get(i).setNum(Integer.valueOf(num[i]));
+                    if (cardsList.get(i).getNum()==0){
+                        emptyList.add(cardsList.get(i));
+                    }
+                }
+            }
+        }
+        private void save(){
+            String num="";
+            for (Card card:cardsList){
+                num+=card.getNum()+" ";
+            }
+            editor.putString("record",num);
+            editor.apply();
         }
         private void maxScore(){
             int maxScore=sharedPreferences.getInt("MaxScore",-1);
+            Log.d(TAG,"maxScore:"+maxScore);
             if (score>maxScore&&maxScore!=-1){
                 editor.putInt("MaxScore",score);
                 editor.apply();
-                editor.clear();
                 maxScoreView.setText("最高分:"+score);
             }
 
