@@ -413,14 +413,18 @@ public class GameView extends LinearLayout{
             emptyList.addAll(cardsList);
             addNum();addNum();
             score=0;
-            scoreView.setText("0");
+            scoreView.setText("得分:0");
         }
 
         @Override
         protected void onSizeChanged(int w, int h, int oldw, int oldh) {
             super.onSizeChanged(w, h, oldw, oldh);
-            addNum();
-            addNum();
+            SharedPreferences s=PreferenceManager.getDefaultSharedPreferences(getContext());
+            if (s.getString("record",null)==null){
+                addNum();
+                addNum();
+            }
+
         }
 
         /**
@@ -475,6 +479,10 @@ public class GameView extends LinearLayout{
                         emptyList.add(cardsList.get(i));
                     }
                 }
+                score=sharedPreferences.getInt("score",-1);
+                if (score!=-1){
+                    scoreView.setText("得分:"+score);
+                }
             }
         }
         private void save(){
@@ -483,6 +491,7 @@ public class GameView extends LinearLayout{
                 num+=card.getNum()+" ";
             }
             editor.putString("record",num);
+            editor.putInt("score",score);
             editor.apply();
         }
         private void maxScore(){
