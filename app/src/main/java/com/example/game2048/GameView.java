@@ -211,8 +211,8 @@ public class GameView extends LinearLayout{
                 addNum();
                 Log();
             }
-            finishcheck();
             save();
+            finishcheck();
         }
 
         private void moveRight(){
@@ -264,8 +264,8 @@ public class GameView extends LinearLayout{
                 addNum();
                 Log();
             }
-            finishcheck();
             save();
+            finishcheck();
         }
         private void moveUp(){
             int []num=new int[N];
@@ -317,8 +317,8 @@ public class GameView extends LinearLayout{
                 addNum();
                 Log();
             }
-            finishcheck();
             save();
+            finishcheck();
         }
         private void moveDown(){
             int []num=new int[N];
@@ -369,8 +369,8 @@ public class GameView extends LinearLayout{
                 addNum();
                 Log();
             }
-            finishcheck();
             save();
+            finishcheck();
         }
         private void addNum(){
             if (emptyList.size()!=0) {
@@ -472,10 +472,11 @@ public class GameView extends LinearLayout{
         private void read(){
             String text=sharedPreferences.getString("record",null);
             if (text!=null){
-                String []num=text.split(" ");
+                emptyList.clear();
+                String []num_text=text.split(" ");
                 for (int i=0;i<N*N;i++){
-                    cardsList.get(i).setNum(Integer.valueOf(num[i]));
-                    if (cardsList.get(i).getNum()==0){
+                    cardsList.get(i).setNum(Integer.valueOf(num_text[i]));
+                    if (Integer.valueOf(num_text[i])==0){
                         emptyList.add(cardsList.get(i));
                     }
                 }
